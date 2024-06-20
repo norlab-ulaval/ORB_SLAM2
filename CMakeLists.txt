@@ -86,6 +86,10 @@ add_executable(stereo_borealhdr
 Main/stereo_borealhdr.cc)
 target_link_libraries(stereo_borealhdr ${PROJECT_NAME})
 
+add_executable(stereo_borealhdr_euroc
+Main/stereo_borealhdr_euroc.cc)
+target_link_libraries(stereo_borealhdr_euroc ${PROJECT_NAME})
+
 # Build examples
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/RGB-D)
