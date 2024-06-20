@@ -21,7 +21,8 @@ RUN apt -y update \
 	&& apt -y install sudo \
 	&& apt -y install python3-opencv \
 	&& apt -y install vim \
-	&& apt -y install libssl-dev
+	&& apt -y install libssl-dev \
+	&& apt -y install python3-pip
 
 # add user
 RUN useradd -u ${MY_UID} -m ${USERNAME} -s /bin/bash  && yes ${PASSWORD} | passwd ${USERNAME}
@@ -49,5 +50,5 @@ ENV HOME=/home/user
 COPY ./docker/entrypoint.sh /entrypoint.sh
 ENTRYPOINT [ "/entrypoint.sh" ]
 
-WORKDIR /home/user/
+WORKDIR /home/user/code/
 
