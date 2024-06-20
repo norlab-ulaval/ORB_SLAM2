@@ -71,6 +71,9 @@ int main(int argc, char **argv)
     {
         // Read image from file
         im = cv::imread(vstrImageFilenames[ni],CV_LOAD_IMAGE_UNCHANGED);
+        im /= 16.0;
+        im.convertTo(im, CV_8U);
+
         double tframe = vTimestamps[ni];
 
         if(im.empty())
