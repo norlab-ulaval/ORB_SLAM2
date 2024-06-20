@@ -3,7 +3,7 @@
     "dockerComposeFile": [
         "docker-compose.yaml" // the docker compose file that we want to run
     ],
-    "workspaceFolder": "/home/user/",
+    "workspaceFolder": "/home/user/code/",
 	// "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/project,type=bind",
     "service": "service_orbslam2", // The service in docker-compose.yml that we want vs code to use as a dev containers 
     "shutdownAction": "stopCompose",

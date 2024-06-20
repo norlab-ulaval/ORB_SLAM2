@@ -31,22 +31,34 @@
 
 using namespace std;
 
-void LoadImages(const string &strPathToSequence, const string &strValueExposureTime, vector<string> &vstrImageLeft,
-                vector<string> &vstrImageRight, vector<double> &vTimestamps);
+void LoadImages(const string &strPathLeft, const string &strPathRight, const string &strPathTimes,
+                vector<string> &vstrImageLeft, vector<string> &vstrImageRight, vector<double> &vTimeStamps);
 
 int main(int argc, char **argv)
 {
-    if(argc != 5)
+    if(argc != 6)
     {
-        cerr << endl << "Usage: ./stereo_borealhdr path_to_vocabulary path_to_settings path_to_sequence value_exposure_time" << endl;
+        cerr << endl << "Usage: ./stereo_euroc path_to_vocabulary path_to_settings path_to_left_folder path_to_right_folder path_to_times_file" << endl;
         return 1;
     }
 
     // Retrieve paths to images
     vector<string> vstrImageLeft;
     vector<string> vstrImageRight;
-    vector<double> vTimestamps;
-    LoadImages(string(argv[3]), string(argv[4]), vstrImageLeft, vstrImageRight, vTimestamps);
+    vector<double> vTimeStamp;
+    LoadImages(string(argv[3]), string(argv[4]), string(argv[5]), vstrImageLeft, vstrImageRight, vTimeStamp);
+
+    if(vstrImageLeft.empty() || vstrImageRight.empty())
+    {
+        cerr << "ERROR: No images in provided path." << endl;
+        return 1;
+    }
+
+    if(vstrImageLeft.size()!=vstrImageRight.size())
+    {
+        cerr << "ERROR: Different number of left and right images." << endl;
+        return 1;
+    }
 
     // Read rectification parameters
     cv::FileStorage fsSettings(argv[2], cv::FileStorage::READ);
@@ -74,21 +86,6 @@ int main(int argc, char **argv)
     int rows_r = fsSettings["RIGHT.height"];
     int cols_r = fsSettings["RIGHT.width"];
 
-    // Apply scale for low resolution dataset
-    // double scale = 0.5;
-    // rows_l *= scale;
-    // cols_l *= scale;
-    // rows_r *= scale;
-    // cols_r *= scale;
-    // K_l.at<double>(0, 0) *= scale; // fx
-    // K_l.at<double>(1, 1) *= scale; // fy
-    // K_l.at<double>(0, 2) *= scale; // cx
-    // K_l.at<double>(1, 2) *= scale; // cy
-    // K_r.at<double>(0, 0) *= scale; // fx
-    // K_r.at<double>(1, 1) *= scale; // fy
-    // K_r.at<double>(0, 2) *= scale; // cx
-    // K_r.at<double>(1, 2) *= scale; // cy
-
     if(K_l.empty() || K_r.empty() || P_l.empty() || P_r.empty() || R_l.empty() || R_r.empty() || D_l.empty() || D_r.empty() ||
             rows_l==0 || rows_r==0 || cols_l==0 || cols_r==0)
     {
@@ -99,6 +96,7 @@ int main(int argc, char **argv)
     cv::Mat M1l,M2l,M1r,M2r;
     cv::initUndistortRectifyMap(K_l,D_l,R_l,P_l.rowRange(0,3).colRange(0,3),cv::Size(cols_l,rows_l),CV_32F,M1l,M2l);
     cv::initUndistortRectifyMap(K_r,D_r,R_r,P_r.rowRange(0,3).colRange(0,3),cv::Size(cols_r,rows_r),CV_32F,M1r,M2r);
+
 
     const int nImages = vstrImageLeft.size();
 
@@ -111,7 +109,7 @@ int main(int argc, char **argv)
 
     cout << endl << "-------" << endl;
     cout << "Start processing sequence ..." << endl;
-    cout << "Images in the sequence: " << nImages << endl << endl;   
+    cout << "Images in the sequence: " << nImages << endl << endl;
 
     // Main loop
     cv::Mat imLeft, imRight, imLeftRect, imRightRect;
@@ -120,9 +118,6 @@ int main(int argc, char **argv)
         // Read left and right images from file
         imLeft = cv::imread(vstrImageLeft[ni],CV_LOAD_IMAGE_UNCHANGED);
         imRight = cv::imread(vstrImageRight[ni],CV_LOAD_IMAGE_UNCHANGED);
-        double tframe = vTimestamps[ni];
-
-        // Convert imLeft and imRight from 16 bits to 8 bits grayscale
         imLeft /= 16.0;
         imRight /= 16.0;
         imLeft.convertTo(imLeft, CV_8U);
@@ -134,6 +129,7 @@ int main(int argc, char **argv)
                  << string(vstrImageLeft[ni]) << endl;
             return 1;
         }
+
         if(imRight.empty())
         {
             cerr << endl << "Failed to load image at: "
@@ -143,6 +139,9 @@ int main(int argc, char **argv)
 
         cv::remap(imLeft,imLeftRect,M1l,M2l,cv::INTER_LINEAR);
         cv::remap(imRight,imRightRect,M1r,M2r,cv::INTER_LINEAR);
+
+        double tframe = vTimeStamp[ni];
+
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
@@ -165,16 +164,13 @@ int main(int argc, char **argv)
 
         // Wait to load the next frame
         double T=0;
-        cout << tframe << " " << vTimestamps[ni] << endl;
         if(ni<nImages-1)
-            T = vTimestamps[ni+1]-tframe;
+            T = vTimeStamp[ni+1]-tframe;
         else if(ni>0)
-            T = tframe-vTimestamps[ni-1];
+            T = tframe-vTimeStamp[ni-1];
 
         if(ttrack<T)
-            cout << "Sleeping for " << (T-ttrack)*1e-3 << " microseconds" << endl;
-            usleep(0.273*1e7);
-            // usleep((T-ttrack)*1e6);
+            usleep((T-ttrack)*1e6);
     }
 
     // Stop all threads
@@ -197,12 +193,14 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void LoadImages(const string &strPathToSequence, const string &strValueExposureTime, vector<string> &vstrImageLeft,
-                vector<string> &vstrImageRight, vector<double> &vTimestamps)
+void LoadImages(const string &strPathLeft, const string &strPathRight, const string &strPathTimes,
+                vector<string> &vstrImageLeft, vector<string> &vstrImageRight, vector<double> &vTimeStamps)
 {
     ifstream fTimes;
-    string strPathTimeFile = strPathToSequence + "/times_" + strValueExposureTime + ".txt";
-    fTimes.open(strPathTimeFile.c_str());
+    fTimes.open(strPathTimes.c_str());
+    vTimeStamps.reserve(5000);
+    vstrImageLeft.reserve(5000);
+    vstrImageRight.reserve(5000);
     while(!fTimes.eof())
     {
         string s;
@@ -211,22 +209,12 @@ void LoadImages(const string &strPathToSequence, const string &strValueExposureT
         {
             stringstream ss;
             ss << s;
+            vstrImageLeft.push_back(strPathLeft + "/" + ss.str() + ".png");
+            vstrImageRight.push_back(strPathRight + "/" + ss.str() + ".png");
             double t;
             ss >> t;
-            vTimestamps.push_back(t);
+            vTimeStamps.push_back(t/1e9);
+
         }
-    }
-
-    string strPrefixLeft = strPathToSequence + "camera_left/" + strValueExposureTime + "/";
-    string strPrefixRight = strPathToSequence + "camera_right/" + strValueExposureTime + "/";
-
-    const int nTimes = vTimestamps.size();
-    vstrImageLeft.resize(nTimes);
-    vstrImageRight.resize(nTimes);
-
-    for(int i=0; i<nTimes; i++)
-    {
-        vstrImageLeft[i] = strPrefixLeft + to_string((uint64_t)vTimestamps[i]) + ".png";
-        vstrImageRight[i] = strPrefixRight + to_string((uint64_t)vTimestamps[i]) + ".png";
     }
 }

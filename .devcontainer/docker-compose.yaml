@@ -21,6 +21,7 @@ services:
     volumes:
       - /dev/shm:/dev/shm
       - ../:/home/user/code
-      - ../../data/:/home/user/code/data
+      - /media/olivier_g/T7_Shield4/ICRA2024_OG/dataset:/home/user/data
+      # - ../../data_test/:/home/user/data
       # - <Add directory dataset>:/home/user/code/dataset_mount_point/ #Mount directory to dataset
   
