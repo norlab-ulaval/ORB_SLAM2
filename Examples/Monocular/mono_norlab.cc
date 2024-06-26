@@ -23,6 +23,8 @@
 #include<algorithm>
 #include<fstream>
 #include<chrono>
+#include <stdio.h>
+#include <dirent.h>
 
 #include<opencv2/core/core.hpp>
 
@@ -30,21 +32,20 @@
 
 using namespace std;
 
-void LoadImages(const string &strImagePath, const string &strPathTimes,
-                vector<string> &vstrImages, vector<double> &vTimeStamps);
+void LoadImages(const string &strImagePath, vector<string> &vstrImages, vector<double> &vTimeStamps);
 
 int main(int argc, char **argv)
 {
-    if(argc != 5)
+    if(argc != 4)
     {
-        cerr << endl << "Usage: ./mono_euroc path_to_vocabulary path_to_settings path_to_image_folder path_to_times_file" << endl;
+        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_image_folder" << endl;
         return 1;
     }
 
     // Retrieve paths to images
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
-    LoadImages(string(argv[3]), string(argv[4]), vstrImageFilenames, vTimestamps);
+    LoadImages(string(argv[3]), vstrImageFilenames, vTimestamps);
 
     int nImages = vstrImageFilenames.size();
 
@@ -145,26 +146,24 @@ int main(int argc, char **argv)
     return 0;
 }
 
-void LoadImages(const string &strImagePath, const string &strPathTimes,
-                vector<string> &vstrImages, vector<double> &vTimeStamps)
+void LoadImages(const string &strImagePath, vector<string> &vstrImages, vector<double> &vTimeStamps)
 {
-    ifstream fTimes;
-    fTimes.open(strPathTimes.c_str());
-    vTimeStamps.reserve(5000);
-    vstrImages.reserve(5000);
-    while(!fTimes.eof())
-    {
-        string s;
-        getline(fTimes,s);
-        if(!s.empty())
-        {
-            stringstream ss;
-            ss << s;
-            vstrImages.push_back(strImagePath + "/" + ss.str() + ".png");
-            double t;
-            ss >> t;
-            vTimeStamps.push_back(t/1e9);
+    struct dirent *entry = nullptr;
+    DIR *dp = nullptr;
 
+    dp = opendir(strImagePath.c_str());
+    if (dp != nullptr) {
+        while ((entry = readdir(dp))) {
+            std::string filename = entry->d_name;
+            std::string timestampStr = filename.substr(0, filename.find_last_of('.'));
+            cout << "filename: " << filename << " timestamp: " << timestampStr << endl;
+            vstrImages.push_back(strImagePath + "/" + filename);
+            vTimeStamps.push_back(std::stod(timestampStr) / 1e9);
         }
     }
+    else {
+        perror ("Couldn't open the directory");
+    }
+
+    closedir(dp);
 }

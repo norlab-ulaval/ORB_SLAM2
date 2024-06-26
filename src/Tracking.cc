@@ -334,21 +334,24 @@ void Tracking::Track()
                 // Local Mapping might have changed some MapPoints tracked in last frame
                 CheckReplacedInLastFrame();
 
-                if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
-                {
-                    cout << "Velocity is empty (" << mVelocity.empty() << ") or last reloc ID outdated (" << (mCurrentFrame.mnId<mnLastRelocFrameId+2) << ")." << endl; 
-                    bOK = TrackReferenceKeyFrame();
-                }
-                else
-                {
-                    cout << "Velocity OK, tracking with motion model." << endl;
-                    bOK = TrackWithMotionModel();
-                    if(!bOK)
-                    {   
-                        cout << "Tracking with motion model failed, tracking with reference keyframe." << endl;
-                        bOK = TrackReferenceKeyFrame();
-                    }
-                }
+                bOK = TrackReferenceKeyFrame();
+
+
+                // if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
+                // {
+                //     cout << "Velocity is empty (" << mVelocity.empty() << ") or last reloc ID outdated (" << (mCurrentFrame.mnId<mnLastRelocFrameId+2) << ")." << endl; 
+                //     bOK = TrackReferenceKeyFrame();
+                // }
+                // else
+                // {
+                //     cout << "Velocity OK, tracking with motion model." << endl;
+                //     bOK = TrackWithMotionModel();
+                //     if(!bOK)
+                //     {   
+                //         cout << "Tracking with motion model failed, tracking with reference keyframe." << endl;
+                //         bOK = TrackReferenceKeyFrame();
+                //     }
+                // }
             }
             else
             {
@@ -441,6 +444,10 @@ void Tracking::Track()
             {
                 cout << "bOK is true, tracking local map." << endl;
                 bOK = TrackLocalMap();
+                if (!bOK)
+                {
+                    cout << "Tracking local map failed." << endl;
+                }
             }
         }
         else
@@ -476,9 +483,10 @@ void Tracking::Track()
                 mVelocity = mCurrentFrame.mTcw*LastTwc;
                 cout << "Velocity updated to " << mVelocity << endl;
             }
-            else
+            else {
                 cout << "Last frame pose is empty, setting velocity to zero." << endl;
                 mVelocity = cv::Mat();
+            }
 
             mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.mTcw);
 
@@ -855,6 +863,7 @@ bool Tracking::TrackReferenceKeyFrame()
         }
     }
 
+    cout << "Number of matches with map points: " << nmatchesMap << ", expecting at least 10." << endl;
     return nmatchesMap>=10;
 }
 
@@ -933,6 +942,7 @@ bool Tracking::TrackWithMotionModel()
     UpdateLastFrame();
 
     mCurrentFrame.SetPose(mVelocity*mLastFrame.mTcw);
+    cout << "Current frame pose: " << mCurrentFrame.mTcw << endl;
 
     fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
 
@@ -943,17 +953,22 @@ bool Tracking::TrackWithMotionModel()
     else
         th=7;
     int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR);
-    cout << "Number of the matches: " << nmatches << endl;
+    cout << "Number of matches: " << nmatches << endl;
 
     // If few matches, uses a wider window search
     if(nmatches<20)
     {
+        cout << "Few matches, using wider window search." << endl;
         fill(mCurrentFrame.mvpMapPoints.begin(),mCurrentFrame.mvpMapPoints.end(),static_cast<MapPoint*>(NULL));
         nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,2*th,mSensor==System::MONOCULAR);
+        cout << "Number of matches after wider window search: " << nmatches << endl;
     }
 
     if(nmatches<20)
+    {
+        cout << "Not enough matches." << endl;
         return false;
+    }
 
     // Optimize frame pose with all matches
     Optimizer::PoseOptimization(&mCurrentFrame);
@@ -985,6 +1000,7 @@ bool Tracking::TrackWithMotionModel()
         return nmatches>20;
     }
 
+    cout << "Number of matches with map points: " << nmatchesMap << ", expecting at least 10." << endl;
     return nmatchesMap>=10;
 }
 
@@ -1022,6 +1038,8 @@ bool Tracking::TrackLocalMap()
 
         }
     }
+
+    cout << "Number of inliers: " << mnMatchesInliers << endl;
 
     // Decide if the tracking was succesful
     // More restrictive if there was a relocalization recently

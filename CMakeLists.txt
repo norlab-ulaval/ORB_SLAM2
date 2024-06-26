@@ -123,3 +123,7 @@ add_executable(mono_euroc
 Examples/Monocular/mono_euroc.cc)
 target_link_libraries(mono_euroc ${PROJECT_NAME})
 
+add_executable(mono_norlab
+Examples/Monocular/mono_norlab.cc)
+target_link_libraries(mono_norlab ${PROJECT_NAME})
+
