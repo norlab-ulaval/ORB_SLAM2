@@ -17,7 +17,8 @@
                 "redhat.vscode-yaml",
                 "flyfly6.terminal-in-status-bar",
                 "ms-azuretools.vscode-docker",
-                "ms-vscode.cmake-tools"
+                "ms-vscode.cmake-tools",
+                "GitHub.copilot"
             ]
         }
     }
