@@ -266,6 +266,29 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 
 void Tracking::Track()
 {
+
+    cout << "----------------" << endl;
+    cout << "Tracking Routine" << endl;
+
+    cout << "Current Frame ID: " << mCurrentFrame.mnId << endl;
+    cout << "State: ";
+
+    if (mState == SYSTEM_NOT_READY) {
+        cout << "SYSTEM_NOT_READY" << endl;
+    }
+    else if (mState == NO_IMAGES_YET) {
+        cout << "NO_IMAGES_YET" << endl;
+    }
+    else if (mState == NOT_INITIALIZED) {
+        cout << "NOT_INITIALIZED" << endl;
+    }
+    else if (mState == OK) {
+        cout << "OK" << endl;
+    }
+    else if (mState == LOST) {
+        cout << "LOST" << endl;
+    }
+    
     if(mState==NO_IMAGES_YET)
     {
         mState = NOT_INITIALIZED;
@@ -276,10 +299,9 @@ void Tracking::Track()
     // Get Map Mutex -> Map cannot be changed
     unique_lock<mutex> lock(mpMap->mMutexMapUpdate);
 
-    cout << "My state is the following: " << eTrackingState(mState) << endl;
-
     if(mState==NOT_INITIALIZED)
     {
+        cout << "Initializing..." << endl;
         if(mSensor==System::STEREO || mSensor==System::RGBD)
             StereoInitialization();
         else
@@ -287,12 +309,15 @@ void Tracking::Track()
 
         mpFrameDrawer->Update(this);
 
-        if(mState!=OK)
+        if(mState!=OK) {
+            cout << "State is not OK after initialization" << endl;
             return;
+        }
     }
     else
     {
         // System is initialized. Track Frame.
+        cout << "System is initialized, tracking..." << endl;
         bool bOK;
 
         // Initial camera pose estimation using motion model or relocalization (if tracking is lost)
@@ -301,32 +326,40 @@ void Tracking::Track()
             // Local Mapping is activated. This is the normal behaviour, unless
             // you explicitly activate the "only tracking" mode.
 
+            cout << "Local Mapping is activated" << endl;
+
             if(mState==OK)
             {
+                cout << "State is OK, check replaced in last frame." << endl;
                 // Local Mapping might have changed some MapPoints tracked in last frame
                 CheckReplacedInLastFrame();
 
                 if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
                 {
+                    cout << "Velocity is empty (" << mVelocity.empty() << ") or last reloc ID outdated (" << (mCurrentFrame.mnId<mnLastRelocFrameId+2) << ")." << endl; 
                     bOK = TrackReferenceKeyFrame();
-                    cout << "No motion modelllll" << endl; 
                 }
                 else
                 {
+                    cout << "Velocity OK, tracking with motion model." << endl;
                     bOK = TrackWithMotionModel();
                     if(!bOK)
+                    {   
+                        cout << "Tracking with motion model failed, tracking with reference keyframe." << endl;
                         bOK = TrackReferenceKeyFrame();
-                    cout << "Yes I got one!" << endl;
+                    }
                 }
             }
             else
             {
+                cout << "State is not OK, relocalizing..." << endl;
                 bOK = Relocalization();
             }
         }
         else
         {
             // Localization Mode: Local Mapping is deactivated
+            cout << "!!!!! Local Mapping is deactivated." << endl;
 
             if(mState==LOST)
             {
@@ -398,14 +431,21 @@ void Tracking::Track()
 
         mCurrentFrame.mpReferenceKF = mpReferenceKF;
 
+        cout << "Current reference keyframe ID: " << mpReferenceKF->mnId << endl;
+
         // If we have an initial estimation of the camera pose and matching. Track the local map.
         if(!mbOnlyTracking)
         {
+            cout << "Not only tracking, tracking local map..." << endl;
             if(bOK)
+            {
+                cout << "bOK is true, tracking local map." << endl;
                 bOK = TrackLocalMap();
+            }
         }
         else
         {
+            cout << "!!!!! Only tracking, not tracking local map." << endl;
             // mbVO true means that there are few matches to MapPoints in the map. We cannot retrieve
             // a local map and therefore we do not perform TrackLocalMap(). Once the system relocalizes
             // the camera we will use the local map again.
@@ -422,22 +462,28 @@ void Tracking::Track()
         mpFrameDrawer->Update(this);
 
         // If tracking were good, check if we insert a keyframe
+        cout << "Checking if we need a new keyframe..." << endl;
         if(bOK)
         {
+            cout << "bOK is true." << endl;
             // Update motion model
             if(!mLastFrame.mTcw.empty())
             {
+                cout << "Last frame pose is not empty, updating velocity." << endl;
                 cv::Mat LastTwc = cv::Mat::eye(4,4,CV_32F);
                 mLastFrame.GetRotationInverse().copyTo(LastTwc.rowRange(0,3).colRange(0,3));
                 mLastFrame.GetCameraCenter().copyTo(LastTwc.rowRange(0,3).col(3));
                 mVelocity = mCurrentFrame.mTcw*LastTwc;
+                cout << "Velocity updated to " << mVelocity << endl;
             }
             else
+                cout << "Last frame pose is empty, setting velocity to zero." << endl;
                 mVelocity = cv::Mat();
 
             mpMapDrawer->SetCurrentCameraPose(mCurrentFrame.mTcw);
 
             // Clean VO matches
+            cout << "Cleaning VO matches..." << endl;
             for(int i=0; i<mCurrentFrame.N; i++)
             {
                 MapPoint* pMP = mCurrentFrame.mvpMapPoints[i];
@@ -450,6 +496,7 @@ void Tracking::Track()
             }
 
             // Delete temporal MapPoints
+            cout << "Deleting temporal MapPoints..." << endl;
             for(list<MapPoint*>::iterator lit = mlpTemporalPoints.begin(), lend =  mlpTemporalPoints.end(); lit!=lend; lit++)
             {
                 MapPoint* pMP = *lit;
@@ -459,7 +506,10 @@ void Tracking::Track()
 
             // Check if we need to insert a new keyframe
             if(NeedNewKeyFrame())
+            {
+                cout << "Need new keyframe, creating..." << endl;
                 CreateNewKeyFrame();
+            }
 
             // We allow points with high innovation (considererd outliers by the Huber Function)
             // pass to the new keyframe, so that bundle adjustment will finally decide
@@ -475,9 +525,10 @@ void Tracking::Track()
         // Reset if the camera get lost soon after initialization
         if(mState==LOST)
         {
+            cout << "Tracking lost." << endl;  
             if(mpMap->KeyFramesInMap()<=5)
             {
-                cout << "Track lost soon after initialisation, reseting..." << endl;
+                cout << "Resetting..." << endl;
                 mpSystem->Reset();
                 return;
             }
@@ -490,8 +541,10 @@ void Tracking::Track()
     }
 
     // Store frame pose information to retrieve the complete camera trajectory afterwards.
+    cout << "Storing frame pose information..." << endl;
     if(!mCurrentFrame.mTcw.empty())
     {
+        cout << "Frame pose is not empty, storing..." << endl;
         cv::Mat Tcr = mCurrentFrame.mTcw*mCurrentFrame.mpReferenceKF->GetPoseInverse();
         mlRelativeFramePoses.push_back(Tcr);
         mlpReferences.push_back(mpReferenceKF);
@@ -501,6 +554,7 @@ void Tracking::Track()
     else
     {
         // This can happen if tracking is lost
+        cout << "Frame pose is empty, storing last frame pose..." << endl;
         mlRelativeFramePoses.push_back(mlRelativeFramePoses.back());
         mlpReferences.push_back(mlpReferences.back());
         mlFrameTimes.push_back(mlFrameTimes.back());
@@ -570,6 +624,7 @@ void Tracking::MonocularInitialization()
     if(!mpInitializer)
     {
         // Set Reference Frame
+        cout << "Initializing, number of keypoints detected: " << mCurrentFrame.mvKeys.size() << endl;
         if(mCurrentFrame.mvKeys.size()>100)
         {
             mInitialFrame = Frame(mCurrentFrame);
@@ -591,6 +646,7 @@ void Tracking::MonocularInitialization()
     else
     {
         // Try to initialize
+        cout << "Initializing2, number of keypoints detected: " << mCurrentFrame.mvKeys.size() << endl;
         if((int)mCurrentFrame.mvKeys.size()<=100)
         {
             delete mpInitializer;
