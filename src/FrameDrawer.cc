@@ -119,8 +119,13 @@ cv::Mat FrameDrawer::DrawFrame()
         }
     }
 
+    // Resize to fit the window
+    const float imScale=0.6;
+    cv::Mat imSmall;
+    cv::resize(im,imSmall,cv::Size(im.cols*imScale,im.rows*imScale));
+
     cv::Mat imWithInfo;
-    DrawTextInfo(im,state, imWithInfo);
+    DrawTextInfo(imSmall,state, imWithInfo);
 
     return imWithInfo;
 }
