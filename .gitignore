@@ -26,3 +26,4 @@ Main/stereo_borealhdr
 Main/stereo_borealhdr_euroc
 Pangolin/
 data/
+.vscode/
