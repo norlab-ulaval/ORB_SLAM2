@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM nvidia/opengl:base-ubuntu18.04
 
 ENV DEBIAN_FRONTEND noninteractive
 
@@ -22,7 +22,11 @@ RUN apt -y update \
 	&& apt -y install python3-opencv \
 	&& apt -y install vim \
 	&& apt -y install libssl-dev \
-	&& apt -y install python3-pip
+	&& apt -y install python3-pip \
+	&& apt -y install mesa-utils \
+    && apt -y install libgl1-mesa-glx \
+    && apt -y install libgl1-mesa-dri \
+	&& apt -y install ninja-build
 
 # add user
 RUN useradd -u ${MY_UID} -m ${USERNAME} -s /bin/bash  && yes ${PASSWORD} | passwd ${USERNAME}
@@ -33,16 +37,17 @@ RUN mkdir /home/user/.ssh
 RUN ssh-keygen -q -t rsa -N '' -f /home/user/.ssh/id_rsa
 
 # create useful folders
-RUN cd /home/user/ \
-	# && mkdir -p repos/ \
-	&& mkdir -p data
+RUN mkdir -p /home/user/data
 	
-# COPY ./build.sh /home/user/code/build.sh
-# COPY ./Thirdparty/ /home/user/code/Thirdparty/
-# COPY ./Vocabulary/ /home/user/code/Vocabulary/
-# COPY ./CMakeLists.txt /home/user/code/CMakeLists.txt
-# WORKDIR /home/user/code/
-# RUN ./build.sh
+# install Pangolin
+# RUN cd /home/user && \
+# 	git clone --recursive https://github.com/stevenlovegrove/Pangolin.git && \
+# 	cd Pangolin && \
+# 	git checkout v0.6 && \
+# 	mkdir build && \
+# 	cd build && \
+# 	cmake .. && \
+# 	cmake --build .
 
 USER $USERNAME
 ENV HOME=/home/user
