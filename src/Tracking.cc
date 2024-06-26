@@ -276,6 +276,8 @@ void Tracking::Track()
     // Get Map Mutex -> Map cannot be changed
     unique_lock<mutex> lock(mpMap->mMutexMapUpdate);
 
+    cout << "My state is the following: " << eTrackingState(mState) << endl;
+
     if(mState==NOT_INITIALIZED)
     {
         if(mSensor==System::STEREO || mSensor==System::RGBD)
@@ -307,12 +309,14 @@ void Tracking::Track()
                 if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
                 {
                     bOK = TrackReferenceKeyFrame();
+                    cout << "No motion modelllll" << endl; 
                 }
                 else
                 {
                     bOK = TrackWithMotionModel();
                     if(!bOK)
                         bOK = TrackReferenceKeyFrame();
+                    cout << "Yes I got one!" << endl;
                 }
             }
             else
@@ -883,6 +887,7 @@ bool Tracking::TrackWithMotionModel()
     else
         th=7;
     int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR);
+    cout << "Number of the matches: " << nmatches << endl;
 
     // If few matches, uses a wider window search
     if(nmatches<20)

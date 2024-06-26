@@ -3,14 +3,18 @@ import yaml
 import numpy as np
 import os
 
-EXPERIMENTS = "september_modified" # "april" or "september
+EXPERIMENTS = "euroc" # "april" or "september
 
 if EXPERIMENTS == "april":
-    calib = yaml.safe_load(open("scripts/calib_files_python/BOREALHDR_april_low_resolution.yaml", 'r'))
+    calib = yaml.safe_load(open("scripts/calib_files_python/BOREALHDR_april.yaml", 'r'))
 elif EXPERIMENTS == "september":
-    calib = yaml.safe_load(open("scripts/calib_files_python/BOREALHDR_september_low_resolution.yaml", 'r'))
+    calib = yaml.safe_load(open("scripts/calib_files_python/BOREALHDR_september.yaml", 'r'))
 elif EXPERIMENTS == "september_modified":
-    calib = yaml.safe_load(open("scripts/calib_files_python/BOREALHDR_september_modified_low_resolution.yaml", 'r'))
+    calib = yaml.safe_load(open("scripts/calib_files_python/BOREALHDR_september_modified.yaml", 'r'))
+elif EXPERIMENTS == "warthog":
+    calib = yaml.safe_load(open("scripts/calib_files_python/WARTHOG.yaml", 'r'))
+elif EXPERIMENTS == "euroc":
+    calib = yaml.safe_load(open("scripts/calib_files_python/EuRoC.yaml", 'r'))
 
 K_left = np.array(calib['LEFT.K']['data']).reshape((3, 3))
 K_right = np.array(calib['RIGHT.K']['data']).reshape((3, 3))
@@ -26,19 +30,22 @@ stereo_map_left = cv2.initUndistortRectifyMap(K_left, distL, rectL, P_left, shap
 stereo_map_right = cv2.initUndistortRectifyMap(K_right, distR, rectR, P_right, shape, cv2.CV_16SC2)
 
 if EXPERIMENTS == "april":
-    for file in os.listdir("../data/forest_04-20-2023/forest_04-20-2023/backpack_2023-04-20-09-29-14/camera_left/8.0"):
-        img_left = cv2.imread(f"../data/forest_04-20-2023/forest_04-20-2023/backpack_2023-04-20-09-29-14/camera_left/8.0/{file}", cv2.IMREAD_ANYDEPTH)
-        img_right = cv2.imread(f"../data/forest_04-20-2023/forest_04-20-2023/backpack_2023-04-20-09-29-14/camera_right/8.0/{file}", cv2.IMREAD_ANYDEPTH)
+    for file in os.listdir("../data/forest_04-21-2023/data_high_resolution/backpack_2023-04-21-08-51-27/camera_left/8.0"):
+        img_left = cv2.imread(f"../data/forest_04-21-2023/data_high_resolution/backpack_2023-04-21-08-51-27/camera_left/8.0/{file}", cv2.IMREAD_ANYDEPTH)
+        img_right = cv2.imread(f"../data/forest_04-21-2023/data_high_resolution/backpack_2023-04-21-08-51-27/camera_right/8.0/{file}", cv2.IMREAD_ANYDEPTH)
 
         img_left = (img_left/16.0).astype(np.uint8)
         img_right = (img_right/16.0).astype(np.uint8)
 
-        img_left = cv2.remap(img_left, stereo_map_left[0], stereo_map_left[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-        img_right = cv2.remap(img_right, stereo_map_right[0], stereo_map_right[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-        img_left[50,:], img_right[50,:] = 0, 0
+        img_left_rect = cv2.remap(img_left, stereo_map_left[0], stereo_map_left[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+        img_right_rect = cv2.remap(img_right, stereo_map_right[0], stereo_map_right[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+        img_left_rect[50,:], img_right_rect[50,:] = 0, 0
 
         combined_image = np.hstack([img_left, img_right])
-        cv2.imshow('Side by Side Images', combined_image)
+        combined_image_rect = np.hstack([img_left_rect, img_right_rect])
+        combined_image_final = np.vstack([combined_image, combined_image_rect])
+        combined_image_final = cv2.resize(combined_image_final, (0,0), fx=0.4, fy=0.4)
+        cv2.imshow('Side by Side Images', combined_image_final)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 elif EXPERIMENTS == "september" or EXPERIMENTS == "september_modified":
@@ -57,3 +64,43 @@ elif EXPERIMENTS == "september" or EXPERIMENTS == "september_modified":
             cv2.imshow('Side by Side Images', combined_image)
             cv2.waitKey(500)
             # cv2.destroyAllWindows()
+elif EXPERIMENTS == "warthog":
+    for file in os.listdir("../data_examples/warthog_2024-06-13_10-35-59/camera_left"):
+        img_left = cv2.imread(f"../data_examples/warthog_2024-06-13_10-35-59/camera_left/{file}", cv2.IMREAD_ANYDEPTH)
+        img_right = cv2.imread(f"../data_examples/warthog_2024-06-13_10-35-59/camera_right/{file}", cv2.IMREAD_ANYDEPTH)
+
+        # img_left = (img_left/16.0).astype(np.uint8)
+        # img_right = (img_right/16.0).astype(np.uint8)
+
+        img_left_rect = cv2.remap(img_left, stereo_map_left[0], stereo_map_left[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+        img_right_rect = cv2.remap(img_right, stereo_map_right[0], stereo_map_right[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+        img_left_rect[50,:], img_right_rect[50,:] = 0, 0
+
+        combined_image = np.hstack([img_left, img_right])
+        combined_image_rect = np.hstack([img_left_rect, img_right_rect])
+        combined_image_final = np.vstack([combined_image, combined_image_rect])
+        combined_image_final = cv2.resize(combined_image_final, (0,0), fx=0.4, fy=0.4)
+        cv2.imshow('Side by Side Images', combined_image_final)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+elif EXPERIMENTS == "euroc":
+    for file in sorted(os.listdir("../data_examples/MH_03_medium/mav0/cam0/data/")):
+        img_left = cv2.imread(f"../data_examples/MH_03_medium/mav0/cam0/data/{file}", cv2.IMREAD_ANYDEPTH)
+        img_right = cv2.imread(f"../data_examples/MH_03_medium/mav0/cam1/data/{file}", cv2.IMREAD_ANYDEPTH)
+
+        # img_left = (img_left/16.0).astype(np.uint8)
+        # img_right = (img_right/16.0).astype(np.uint8)
+
+        img_left_rect = cv2.remap(img_left, stereo_map_left[0], stereo_map_left[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+        img_right_rect = cv2.remap(img_right, stereo_map_right[0], stereo_map_right[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+        
+        img_left[50,:], img_right[50,:] = 0, 0
+        img_left_rect[50,:], img_right_rect[50,:] = 0, 0
+        
+        combined_image = np.hstack([img_left, img_right])
+        combined_image_rect = np.hstack([img_left_rect, img_right_rect])
+        combined_image_final = np.vstack([combined_image, combined_image_rect])
+        combined_image_final = cv2.resize(combined_image_final, (0,0), fx=0.8, fy=0.8)
+        cv2.imshow('Side by Side Images', combined_image_final)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()

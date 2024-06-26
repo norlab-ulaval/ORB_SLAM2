@@ -118,10 +118,10 @@ int main(int argc, char **argv)
         // Read left and right images from file
         imLeft = cv::imread(vstrImageLeft[ni],CV_LOAD_IMAGE_UNCHANGED);
         imRight = cv::imread(vstrImageRight[ni],CV_LOAD_IMAGE_UNCHANGED);
-        imLeft /= 16.0;
-        imRight /= 16.0;
-        imLeft.convertTo(imLeft, CV_8U);
-        imRight.convertTo(imRight, CV_8U);
+        // imLeft /= 16.0;
+        // imRight /= 16.0;
+        // imLeft.convertTo(imLeft, CV_8U);
+        // imRight.convertTo(imRight, CV_8U);
 
         if(imLeft.empty())
         {
@@ -139,6 +139,10 @@ int main(int argc, char **argv)
 
         cv::remap(imLeft,imLeftRect,M1l,M2l,cv::INTER_LINEAR);
         cv::remap(imRight,imRightRect,M1r,M2r,cv::INTER_LINEAR);
+
+        // cv::imshow("Left", imLeftRect);
+        // cv::imshow("Right", imRightRect);
+        // cv::waitKey(0);
 
         double tframe = vTimeStamp[ni];
 
