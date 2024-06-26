@@ -336,6 +336,7 @@ void Tracking::Track()
 
                 bOK = TrackReferenceKeyFrame();
 
+                // NOTE: Motion model was disabled because it caused a lot of instability
 
                 // if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
                 // {
@@ -513,7 +514,8 @@ void Tracking::Track()
             mlpTemporalPoints.clear();
 
             // Check if we need to insert a new keyframe
-            if(NeedNewKeyFrame())
+            // NOTE: We hacked the condition to always insert a new keyframe, as it was causing blinking in the matches
+            if(NeedNewKeyFrame() || true)
             {
                 cout << "Need new keyframe, creating..." << endl;
                 CreateNewKeyFrame();
@@ -833,6 +835,8 @@ bool Tracking::TrackReferenceKeyFrame()
     vector<MapPoint*> vpMapPointMatches;
 
     int nmatches = matcher.SearchByBoW(mpReferenceKF,mCurrentFrame,vpMapPointMatches);
+
+    cout << "Number of matches with reference keyframe: " << nmatches << endl;
 
     if(nmatches<15)
         return false;
