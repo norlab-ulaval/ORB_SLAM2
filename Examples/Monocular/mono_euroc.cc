@@ -67,12 +67,24 @@ int main(int argc, char **argv)
 
     // Main loop
     cv::Mat im;
+    // double alpha = 1.5; /*< Simple contrast control */
     for(int ni=0; ni<nImages; ni++)
     {
         // Read image from file
+        // im = cv::imread(vstrImageFilenames[ni],CV_LOAD_IMAGE_GRAYSCALE);
         im = cv::imread(vstrImageFilenames[ni],CV_LOAD_IMAGE_UNCHANGED);
-        im /= 16.0;
-        im.convertTo(im, CV_8U);
+        // im /= 16.0;
+        // im.convertTo(im, CV_8U);
+        // cv::Mat new_image = cv::Mat::zeros( im.size(), im.type() );
+
+        // for( int y = 0; y < im.rows; y++ ) {
+        //     for( int x = 0; x < im.cols; x++ ) {
+        //         new_image.at<uchar>(y,x) = cv::saturate_cast<uchar>( alpha*(im.at<uchar>(y,x)) );
+        //     }
+        // }
+
+        // cv::Mat new_image;
+        // cv::equalizeHist(im, new_image);
 
         double tframe = vTimestamps[ni];
 
@@ -128,7 +140,7 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt"); // !!We need all images, not just keyframes!!
 
     return 0;
 }
