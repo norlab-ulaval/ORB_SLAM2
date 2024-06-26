@@ -154,9 +154,10 @@ void LoadImages(const string &strImagePath, vector<string> &vstrImages, vector<d
     dp = opendir(strImagePath.c_str());
     if (dp != nullptr) {
         while ((entry = readdir(dp))) {
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
             std::string filename = entry->d_name;
             std::string timestampStr = filename.substr(0, filename.find_last_of('.'));
-            cout << "filename: " << filename << " timestamp: " << timestampStr << endl;
             vstrImages.push_back(strImagePath + "/" + filename);
             vTimeStamps.push_back(std::stod(timestampStr) / 1e9);
         }

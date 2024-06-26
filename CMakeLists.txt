@@ -82,6 +82,10 @@ ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Main)
 
+add_executable(mono_borealhdr
+Main/mono_borealhdr.cc)
+target_link_libraries(mono_borealhdr ${PROJECT_NAME})
+
 add_executable(stereo_borealhdr
 Main/stereo_borealhdr.cc)
 target_link_libraries(stereo_borealhdr ${PROJECT_NAME})
@@ -122,8 +126,4 @@ target_link_libraries(mono_kitti ${PROJECT_NAME})
 add_executable(mono_euroc
 Examples/Monocular/mono_euroc.cc)
 target_link_libraries(mono_euroc ${PROJECT_NAME})
-
-add_executable(mono_norlab
-Examples/Monocular/mono_norlab.cc)
-target_link_libraries(mono_norlab ${PROJECT_NAME})
 
