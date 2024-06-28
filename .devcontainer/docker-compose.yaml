@@ -24,10 +24,10 @@ services:
     volumes:
       - /dev/shm:/dev/shm
       - ../:/home/user/code
-      # - /media/olivier_g/T7_Shield4/ICRA2024_OG/dataset:/home/user/data
-      - ../../data_test:/home/user/data_examples
-      - /media/jean-michel/SSD_JM/OG:/home/user/data
-      - /tmp/.X11-unix:/tmp/.X11-unix
+      - /media/olivier_g/T7_Shield/ICRA2024_OG/dataset:/home/user/data
+      - ../../data_examples:/home/user/data_examples
+      # - /media/jean-michel/SSD_JM/OG:/home/user/data
+      # - /tmp/.X11-unix:/tmp/.X11-unix
       # - ../../data_test/:/home/user/data
       # - <Add directory dataset>:/home/user/code/dataset_mount_point/ #Mount directory to dataset
   

@@ -35,9 +35,6 @@ RUN usermod -aG sudo ${USERNAME}
 # Give ssh key github
 RUN mkdir /home/user/.ssh
 RUN ssh-keygen -q -t rsa -N '' -f /home/user/.ssh/id_rsa
-
-# create useful folders
-RUN mkdir -p /home/user/data
 	
 # install Pangolin
 # RUN cd /home/user && \
