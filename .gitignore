@@ -28,3 +28,6 @@ Main/stereo_borealhdr_euroc
 Pangolin/
 data/
 .vscode/
+
+# data
+scripts/data*

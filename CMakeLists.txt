@@ -80,19 +80,17 @@ ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
 
 # Build main
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Main)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Main/mono)
 
 add_executable(mono_borealhdr
-Main/mono_borealhdr.cc)
+Main/mono/mono_borealhdr.cc)
 target_link_libraries(mono_borealhdr ${PROJECT_NAME})
 
-add_executable(stereo_borealhdr
-Main/stereo_borealhdr.cc)
-target_link_libraries(stereo_borealhdr ${PROJECT_NAME})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Main/stereo)
 
-add_executable(stereo_borealhdr_euroc
-Main/stereo_borealhdr_euroc.cc)
-target_link_libraries(stereo_borealhdr_euroc ${PROJECT_NAME})
+add_executable(stereo_borealhdr
+Main/stereo/stereo_borealhdr.cc)
+target_link_libraries(stereo_borealhdr ${PROJECT_NAME})
 
 # Build examples
 
