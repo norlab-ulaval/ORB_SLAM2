@@ -61,6 +61,7 @@
 #include <vector>
 
 #include "ORBextractor.h"
+#include <iostream>
 
 
 using namespace cv;
@@ -786,6 +787,10 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
         const int wCell = ceil(width/nCols);
         const int hCell = ceil(height/nRows);
 
+        // NOTE: OG
+        int nCells = nCols*nRows;
+        int nCellsNoKeyPoint = 0;
+        int nCellsNoKeyPointAfterMinThreshold = 0;
         for(int i=0; i<nRows; i++)
         {
             const float iniY =minBorderY+i*hCell;
@@ -811,6 +816,7 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
 
                 if(vKeysCell.empty())
                 {
+                    nCellsNoKeyPoint++;
                     FAST(mvImagePyramid[level].rowRange(iniY,maxY).colRange(iniX,maxX),
                          vKeysCell,minThFAST,true);
                 }
@@ -824,9 +830,13 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
                         vToDistributeKeys.push_back(*vit);
                     }
                 }
-
+                else
+                {
+                    nCellsNoKeyPointAfterMinThreshold++;
+                }
             }
         }
+        cout << "Level pyramid: " << level << " / Size image pyramid: " << mvImagePyramid[level].size() << "\nTotal of cells: " << nCells << " nCellsNoKeyPoint: " << nCellsNoKeyPoint << " nCellsNoKeyPointAfterMinThreshold: " << nCellsNoKeyPointAfterMinThreshold << endl;
 
         vector<KeyPoint> & keypoints = allKeypoints[level];
         keypoints.reserve(nfeatures);

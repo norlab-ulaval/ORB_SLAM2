@@ -102,6 +102,10 @@ bool LoopClosing::CheckNewKeyFrames()
 
 bool LoopClosing::DetectLoop()
 {
+    // cout << "Searching for loop..." << endl;
+    // cout << "Turning off Loop Closing for now" << endl;
+    // NOTE: Turned off loop closing with following line
+    return false;
     {
         unique_lock<mutex> lock(mMutexLoopQueue);
         mpCurrentKF = mlpLoopKeyFrameQueue.front();
