@@ -3,7 +3,30 @@ import yaml
 import numpy as np
 import os
 
-EXPERIMENTS = "euroc" # "april" or "september
+def display_rectification(img_left, img_right, stereo_map_left, stereo_map_right, shape):
+
+    img_left_rect = cv2.remap(img_left, stereo_map_left[0], stereo_map_left[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+    img_right_rect = cv2.remap(img_right, stereo_map_right[0], stereo_map_right[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
+    
+    img_left = cv2.cvtColor(img_left, cv2.COLOR_GRAY2BGR)
+    img_right = cv2.cvtColor(img_right, cv2.COLOR_GRAY2BGR)
+    img_left_rect_color = cv2.cvtColor(img_left_rect, cv2.COLOR_GRAY2BGR)
+    img_right_rect_color = cv2.cvtColor(img_right_rect, cv2.COLOR_GRAY2BGR)
+    
+    for i in range(0, shape[1], 100):
+        cv2.line(img_left_rect_color, (0, i), (shape[0], i), (0, 0, 255), 1)
+        cv2.line(img_right_rect_color, (0, i), (shape[0], i), (0, 0, 255), 1)
+
+    combined_image = np.hstack([img_left, img_right])
+    combined_image_rect = np.hstack([img_left_rect_color, img_right_rect_color])
+    combined_image_final = np.vstack([combined_image, combined_image_rect])
+    combined_image_final = cv2.resize(combined_image_final, (0,0), fx=0.4, fy=0.4)
+    cv2.imshow('Side by Side Images', combined_image_final)
+    cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    return
+
+EXPERIMENTS = "april" # "april" or "september
 
 if EXPERIMENTS == "april":
     calib = yaml.safe_load(open("scripts/calib_files_python/BOREALHDR_april.yaml", 'r'))
@@ -36,71 +59,27 @@ if EXPERIMENTS == "april":
 
         img_left = (img_left/16.0).astype(np.uint8)
         img_right = (img_right/16.0).astype(np.uint8)
-
-        img_left_rect = cv2.remap(img_left, stereo_map_left[0], stereo_map_left[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-        img_right_rect = cv2.remap(img_right, stereo_map_right[0], stereo_map_right[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-        img_left_rect[50,:], img_right_rect[50,:] = 0, 0
-
-        combined_image = np.hstack([img_left, img_right])
-        combined_image_rect = np.hstack([img_left_rect, img_right_rect])
-        combined_image_final = np.vstack([combined_image, combined_image_rect])
-        combined_image_final = cv2.resize(combined_image_final, (0,0), fx=0.4, fy=0.4)
-        cv2.imshow('Side by Side Images', combined_image_final)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        display_rectification(img_left, img_right, stereo_map_left, stereo_map_right, shape)
+        
 elif EXPERIMENTS == "september" or EXPERIMENTS == "september_modified":
-    for file in os.listdir("../data/belair_09-27-2023/belair_09-27-2023/backpack_2023-09-27-12-46-32/camera_left/8.0"):
-            img_left = cv2.imread(f"../data/belair_09-27-2023/belair_09-27-2023/backpack_2023-09-27-12-46-32/camera_left/8.0/{file}", cv2.IMREAD_ANYDEPTH)
-            img_right = cv2.imread(f"../data/belair_09-27-2023/belair_09-27-2023/backpack_2023-09-27-12-46-32/camera_right/8.0/{file}", cv2.IMREAD_ANYDEPTH)
+    for file in os.listdir("../data/belair_09-27-2023/data_high_resolution/backpack_2023-09-27-12-46-32/camera_left/8.0"):
+        img_left = cv2.imread(f"../data/belair_09-27-2023/data_high_resolution/backpack_2023-09-27-12-46-32/camera_left/8.0/{file}", cv2.IMREAD_ANYDEPTH)
+        img_right = cv2.imread(f"../data/belair_09-27-2023/data_high_resolution/backpack_2023-09-27-12-46-32/camera_right/8.0/{file}", cv2.IMREAD_ANYDEPTH)
 
-            img_left = (img_left/16.0).astype(np.uint8)
-            img_right = (img_right/16.0).astype(np.uint8)
-
-            img_left = cv2.remap(img_left, stereo_map_left[0], stereo_map_left[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-            img_right = cv2.remap(img_right, stereo_map_right[0], stereo_map_right[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-            img_left[50,:], img_right[50,:] = 0, 0
-
-            combined_image = np.hstack([img_left, img_right])
-            cv2.imshow('Side by Side Images', combined_image)
-            cv2.waitKey(500)
-            # cv2.destroyAllWindows()
+        img_left = (img_left/16.0).astype(np.uint8)
+        img_right = (img_right/16.0).astype(np.uint8)
+        display_rectification(img_left, img_right, stereo_map_left, stereo_map_right, shape)
+            
 elif EXPERIMENTS == "warthog":
     for file in os.listdir("../data_examples/warthog_2024-06-13_10-35-59/camera_left"):
         img_left = cv2.imread(f"../data_examples/warthog_2024-06-13_10-35-59/camera_left/{file}", cv2.IMREAD_ANYDEPTH)
         img_right = cv2.imread(f"../data_examples/warthog_2024-06-13_10-35-59/camera_right/{file}", cv2.IMREAD_ANYDEPTH)
 
-        # img_left = (img_left/16.0).astype(np.uint8)
-        # img_right = (img_right/16.0).astype(np.uint8)
-
-        img_left_rect = cv2.remap(img_left, stereo_map_left[0], stereo_map_left[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-        img_right_rect = cv2.remap(img_right, stereo_map_right[0], stereo_map_right[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-        img_left_rect[50,:], img_right_rect[50,:] = 0, 0
-
-        combined_image = np.hstack([img_left, img_right])
-        combined_image_rect = np.hstack([img_left_rect, img_right_rect])
-        combined_image_final = np.vstack([combined_image, combined_image_rect])
-        combined_image_final = cv2.resize(combined_image_final, (0,0), fx=0.4, fy=0.4)
-        cv2.imshow('Side by Side Images', combined_image_final)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        display_rectification(img_left, img_right, stereo_map_left, stereo_map_right, shape)
+        
 elif EXPERIMENTS == "euroc":
     for file in sorted(os.listdir("../data_examples/MH_03_medium/mav0/cam0/data/")):
         img_left = cv2.imread(f"../data_examples/MH_03_medium/mav0/cam0/data/{file}", cv2.IMREAD_ANYDEPTH)
         img_right = cv2.imread(f"../data_examples/MH_03_medium/mav0/cam1/data/{file}", cv2.IMREAD_ANYDEPTH)
 
-        # img_left = (img_left/16.0).astype(np.uint8)
-        # img_right = (img_right/16.0).astype(np.uint8)
-
-        img_left_rect = cv2.remap(img_left, stereo_map_left[0], stereo_map_left[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-        img_right_rect = cv2.remap(img_right, stereo_map_right[0], stereo_map_right[1], cv2.INTER_LANCZOS4, cv2.BORDER_CONSTANT, 0)
-        
-        img_left[50,:], img_right[50,:] = 0, 0
-        img_left_rect[50,:], img_right_rect[50,:] = 0, 0
-        
-        combined_image = np.hstack([img_left, img_right])
-        combined_image_rect = np.hstack([img_left_rect, img_right_rect])
-        combined_image_final = np.vstack([combined_image, combined_image_rect])
-        combined_image_final = cv2.resize(combined_image_final, (0,0), fx=0.8, fy=0.8)
-        cv2.imshow('Side by Side Images', combined_image_final)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
+        display_rectification(img_left, img_right, stereo_map_left, stereo_map_right, shape)
