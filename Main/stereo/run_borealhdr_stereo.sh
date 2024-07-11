@@ -3,9 +3,9 @@
 ### APRIL ###
 exposure_time=16.0
 experiment=forest_04-21-2023
-file_name=backpack_2023-04-21-09-15-59
+file_name=backpack_2023-04-21-08-51-27
 
-./Main/stereo/stereo_borealhdr Vocabulary/ORBvoc.txt Main/stereo/calib_files/BOREALHDR_april.yaml ../data/$experiment/data_high_resolution/$file_name/camera_left/$exposure_time/ ../data/$experiment/data_high_resolution/$file_name/camera_right/$exposure_time/
+./Main/stereo/stereo_borealhdr Vocabulary/ORBvoc.txt Main/stereo/calib_files/BOREALHDR_april.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_left/$exposure_time/ ../../data/$experiment/data_high_resolution/$file_name/camera_right/$exposure_time/ ../results/$file_name/$exposure_time/
 
 ### SEPTEMBER ###
 exposure_time=16.0
