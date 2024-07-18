@@ -836,7 +836,7 @@ void ORBextractor::ComputeKeyPointsOctTree(vector<vector<KeyPoint> >& allKeypoin
                 }
             }
         }
-        cout << "Level pyramid: " << level << " / Size image pyramid: " << mvImagePyramid[level].size() << "\nTotal of cells: " << nCells << " nCellsNoKeyPoint: " << nCellsNoKeyPoint << " nCellsNoKeyPointAfterMinThreshold: " << nCellsNoKeyPointAfterMinThreshold << endl;
+        // cout << "Level pyramid: " << level << " / Size image pyramid: " << mvImagePyramid[level].size() << "\nTotal of cells: " << nCells << " nCellsNoKeyPoint: " << nCellsNoKeyPoint << " nCellsNoKeyPointAfterMinThreshold: " << nCellsNoKeyPointAfterMinThreshold << endl;
 
         vector<KeyPoint> & keypoints = allKeypoints[level];
         keypoints.reserve(nfeatures);

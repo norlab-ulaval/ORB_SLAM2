@@ -130,6 +130,7 @@ int main(int argc, char **argv)
 
     // Main loop
     cv::Mat imLeft, imRight, imLeftRect, imRightRect;
+    int count_map = 0;
     for (int ni = 0; ni < nImages; ni++)
     {
         // Read left and right images from file
@@ -172,7 +173,8 @@ int main(int argc, char **argv)
 #endif
 
         // Pass the images to the SLAM system
-        SLAM.TrackStereo(imLeftRect, imRightRect, tframe);
+        SLAM.TrackStereoCountMap(imLeftRect, imRightRect, tframe, count_map);
+        cout << "Map number: " << count_map << endl;
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -191,7 +193,7 @@ int main(int argc, char **argv)
         else if (ni > 0)
             T = tframe - vTimeStamp[ni - 1];
 
-        SLAM.SaveTrajectoryTUM(savePath + "/CameraTrajectory.txt");
+        SLAM.SaveTrajectoryTUM(savePath + "/CameraTrajectory" + std::to_string(count_map) + ".txt");
 
         // if (ttrack < T)
         //     usleep((T - ttrack) * 1e6);

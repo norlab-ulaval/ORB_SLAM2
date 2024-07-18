@@ -199,7 +199,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
     mCurrentFrame = Frame(mImGray,imGrayRight,timestamp,mpORBextractorLeft,mpORBextractorRight,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
 
     Track();
-
+    cout << "Current frame transformation: " << mCurrentFrame.mTcw << endl;
     return mCurrentFrame.mTcw.clone();
 }
 
@@ -536,12 +536,12 @@ void Tracking::Track()
         if(mState==LOST)
         {
             cout << "Tracking lost." << endl;  
-            if(mpMap->KeyFramesInMap()<=5)
-            {
-                cout << "Resetting..." << endl;
-                mpSystem->Reset();
-                return;
-            }
+            // if(mpMap->KeyFramesInMap()<=5)
+            // {
+            cout << "Lost, resetting..." << endl;
+            mpSystem->Reset();
+            return;
+            // }
         }
 
         if(!mCurrentFrame.mpReferenceKF)
@@ -576,8 +576,11 @@ void Tracking::Track()
 
 void Tracking::StereoInitialization()
 {
-    if(mCurrentFrame.N>500)
+    cout << "Number of keypoints detected: " << mCurrentFrame.N << endl;
+    // if(mCurrentFrame.N>500)
+    if(mCurrentFrame.N>50) // Changed to 50 to remove chances of breaking the pipeline. WIll just reset if the initialization fails with 50 keypoints
     {
+        cout << "Stereo initialization..." << endl;
         // Set Frame pose to the origin
         mCurrentFrame.SetPose(cv::Mat::eye(4,4,CV_32F));
 
