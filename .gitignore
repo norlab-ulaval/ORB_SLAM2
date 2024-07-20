@@ -22,9 +22,9 @@ build/
 *~
 lib/
 
-Main/mono_borealhdr
-Main/stereo_borealhdr
-Main/stereo_borealhdr_euroc
+Main/mono/mono_borealhdr
+Main/stereo/stereo_borealhdr
+Main/stereo/stereo_borealhdr_euroc
 Pangolin/
 data/
 .vscode/
