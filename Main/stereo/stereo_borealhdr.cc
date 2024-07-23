@@ -262,22 +262,22 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, vector<st
     }
 
     // Ask the user if they want to remove the images that don't have a corresponding right image
-    if (toRemove.size() > 0)
-    {
-        std::cout << YELLOW << "[WARNING] The following images were not in both folders:" << RESET << std::endl;
-        for (int i = 0; i < toRemove.size(); i++)
-        {
-            std::cout << "  -> " << vstrImageLeft[toRemove[i]].substr(vstrImageLeft[i].find_last_of('/') + 1) << std::endl;
-        }
-        std::cout << "Do you want to remove them from the calculations? [y/n] ";
-        char answer;
-        std::cin >> answer;
-        if (answer == 'n')
-        {
-            std::cout << "Exiting..." << std::endl;
-            exit(0);
-        }
-    }
+    // if (toRemove.size() > 0)
+    // {
+    //     std::cout << YELLOW << "[WARNING] The following images were not in both folders:" << RESET << std::endl;
+    //     for (int i = 0; i < toRemove.size(); i++)
+    //     {
+    //         std::cout << "  -> " << vstrImageLeft[toRemove[i]].substr(vstrImageLeft[i].find_last_of('/') + 1) << std::endl;
+    //     }
+    //     std::cout << "Do you want to remove them from the calculations? [y/n] ";
+    //     char answer;
+    //     std::cin >> answer;
+    //     if (answer == 'n')
+    //     {
+    //         std::cout << "Exiting..." << std::endl;
+    //         exit(0);
+    //     }
+    // }
 
     // Remove the images that don't have a corresponding right image
     for (int i = toRemove.size() - 1; i >= 0; i--)

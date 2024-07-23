@@ -36,9 +36,9 @@ void LoadImages(const string &strImagePath, vector<string> &vstrImages, vector<d
 
 int main(int argc, char **argv)
 {
-    if(argc != 4)
+    if(argc != 5)
     {
-        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_image_folder" << endl;
+        cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_image_folder save_path" << endl;
         return 1;
     }
 
@@ -46,6 +46,11 @@ int main(int argc, char **argv)
     vector<string> vstrImageFilenames;
     vector<double> vTimestamps;
     LoadImages(string(argv[3]), vstrImageFilenames, vTimestamps);
+
+    std::string savePath = argv[4];
+    // Create save folder
+    std::string command = "mkdir -p " + savePath;
+    system(command.c_str());
 
     int nImages = vstrImageFilenames.size();
 
@@ -56,7 +61,7 @@ int main(int argc, char **argv)
     }
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,true);
+    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,false);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -68,7 +73,7 @@ int main(int argc, char **argv)
 
     // Main loop
     cv::Mat im;
-    // double alpha = 1.5; /*< Simple contrast control */
+    int count_map = 0;
     for(int ni=0; ni<nImages; ni++)
     {
         // Read image from file
@@ -76,16 +81,6 @@ int main(int argc, char **argv)
         im = cv::imread(vstrImageFilenames[ni],CV_LOAD_IMAGE_UNCHANGED);
         im /= 16.0;
         im.convertTo(im, CV_8U);
-        // cv::Mat new_image = cv::Mat::zeros( im.size(), im.type() );
-
-        // for( int y = 0; y < im.rows; y++ ) {
-        //     for( int x = 0; x < im.cols; x++ ) {
-        //         new_image.at<uchar>(y,x) = cv::saturate_cast<uchar>( alpha*(im.at<uchar>(y,x)) );
-        //     }
-        // }
-
-        // cv::Mat new_image;
-        // cv::equalizeHist(im, new_image);
 
         double tframe = vTimestamps[ni];
 
@@ -103,7 +98,9 @@ int main(int argc, char **argv)
 #endif
 
         // Pass the image to the SLAM system
-        SLAM.TrackMonocular(im,tframe);
+        // SLAM.TrackMonocular(im,tframe);
+        SLAM.TrackMonocularCountMap(im,tframe, count_map);
+        cout << "Map number: " << count_map << endl;
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
@@ -122,8 +119,10 @@ int main(int argc, char **argv)
         else if(ni>0)
             T = tframe-vTimestamps[ni-1];
 
-        if(ttrack<T)
-            usleep((T-ttrack)*1e6);
+        // if(ttrack<T)
+        //     usleep((T-ttrack)*1e6);
+
+        SLAM.SaveKeyFrameTrajectoryTUM(savePath + "/CameraTrajectory" + std::to_string(count_map) + ".txt");
     }
 
     // Stop all threads
@@ -141,10 +140,33 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt"); // !!We need all images, not just keyframes!!
+    SLAM.SaveKeyFrameTrajectoryTUM(savePath + "/CameraTrajectory" + std::to_string(count_map) + ".txt");
 
     return 0;
 }
+
+// void LoadImages(const string &strImagePath, vector<string> &vstrImages, vector<double> &vTimeStamps)
+// {
+//     struct dirent *entry = nullptr;
+//     DIR *dp = nullptr;
+
+//     dp = opendir(strImagePath.c_str());
+//     if (dp != nullptr) {
+//         while ((entry = readdir(dp))) {
+//             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+//                 continue;
+//             std::string filename = entry->d_name;
+//             std::string timestampStr = filename.substr(0, filename.find_last_of('.'));
+//             vstrImages.push_back(strImagePath + "/" + filename);
+//             vTimeStamps.push_back(std::stod(timestampStr) / 1e9);
+//         }
+//     }
+//     else {
+//         perror ("Couldn't open the directory");
+//     }
+
+//     closedir(dp);
+// }
 
 void LoadImages(const string &strImagePath, vector<string> &vstrImages, vector<double> &vTimeStamps)
 {
@@ -152,8 +174,10 @@ void LoadImages(const string &strImagePath, vector<string> &vstrImages, vector<d
     DIR *dp = nullptr;
 
     dp = opendir(strImagePath.c_str());
-    if (dp != nullptr) {
-        while ((entry = readdir(dp))) {
+    if (dp != nullptr)
+    {
+        while ((entry = readdir(dp)))
+        {
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
             std::string filename = entry->d_name;
@@ -162,8 +186,9 @@ void LoadImages(const string &strImagePath, vector<string> &vstrImages, vector<d
             vTimeStamps.push_back(std::stod(timestampStr) / 1e9);
         }
     }
-    else {
-        perror ("Couldn't open the directory");
+    else
+    {
+        perror("Couldn't open the directory");
     }
 
     closedir(dp);

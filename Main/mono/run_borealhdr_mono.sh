@@ -13,7 +13,7 @@ experiment=campus_07-22-2024
 file_name=backpack_2024-07-22-14-07-23
 
 # # Bracketing
-# ./Main/mono/mono_borealhdr Vocabulary/ORBvoc.txt Main/mono/calib_files/BOREALHDR_july_left.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_left/$exposure_time/
+# ./Main/mono/mono_borealhdr Vocabulary/ORBvoc.txt Main/mono/calib_files/BOREALHDR_july_left.yaml ../../../data/$experiment/data_high_resolution/$file_name/camera_left/$exposure_time/
 
 # Automatic exposure time
-./Main/mono/mono_borealhdr Vocabulary/ORBvoc.txt Main/mono/calib_files/BOREALHDR_july_right.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_right/auto_exposure/
+./Main/mono/mono_borealhdr Vocabulary/ORBvoc.txt Main/mono/calib_files/BOREALHDR_july_right.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_right/ ../results/$file_name/orbslam2/mono/auto_exposure/
