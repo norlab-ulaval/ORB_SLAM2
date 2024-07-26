@@ -61,7 +61,7 @@ int main(int argc, char **argv)
     }
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,false);
+    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::MONOCULAR,true);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -78,6 +78,9 @@ int main(int argc, char **argv)
     {
         // Read image from file
         // im = cv::imread(vstrImageFilenames[ni],CV_LOAD_IMAGE_GRAYSCALE);
+
+        cout << "Reading image " << vstrImageFilenames[ni] << endl;
+
         im = cv::imread(vstrImageFilenames[ni],CV_LOAD_IMAGE_UNCHANGED);
         im /= 16.0;
         im.convertTo(im, CV_8U);
@@ -176,16 +179,30 @@ void LoadImages(const string &strImagePath, vector<string> &vstrImages, vector<d
     dp = opendir(strImagePath.c_str());
     if (dp != nullptr)
     {
+        std::vector<std::string> filenames;
         while ((entry = readdir(dp)))
         {
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
-            std::string filename = entry->d_name;
+            filenames.push_back(entry->d_name);
+        }
+        std::sort(filenames.begin(), filenames.end());
+
+        for (const auto& filename : filenames)
+        {
             std::string timestampStr = filename.substr(0, filename.find_last_of('.'));
             vstrImages.push_back(strImagePath + "/" + filename);
             vTimeStamps.push_back(std::stod(timestampStr) / 1e9);
         }
     }
+    //         std::string filename = entry->d_name;
+    //         std::string timestampStr = filename.substr(0, filename.find_last_of('.'));
+    //         cout << "filename: " << filename << endl;
+    //         cout << "timestampStr: " << timestampStr << endl;
+    //         vstrImages.push_back(strImagePath + "/" + filename);
+    //         vTimeStamps.push_back(std::stod(timestampStr) / 1e9);
+    //     }
+    // }
     else
     {
         perror("Couldn't open the directory");

@@ -8,12 +8,15 @@
 # ./Main/mono/mono_borealhdr Vocabulary/ORBvoc.txt Main/mono/calib_files/BOREALHDR_april.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_left/$exposure_time/
 
 ### July ###
-exposure_time=4.0
+exposure_time=8.0
 experiment=campus_07-22-2024
 file_name=backpack_2024-07-22-14-07-23
 
 # # Bracketing
-# ./Main/mono/mono_borealhdr Vocabulary/ORBvoc.txt Main/mono/calib_files/BOREALHDR_july_left.yaml ../../../data/$experiment/data_high_resolution/$file_name/camera_left/$exposure_time/
+# ./Main/mono/mono_borealhdr Vocabulary/ORBvoc.txt Main/mono/calib_files/BOREALHDR_july_left.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_left/$exposure_time/ ./results/$file_name/orbslam2/mono/$exposure_time/
 
-# Automatic exposure time
-./Main/mono/mono_borealhdr Vocabulary/ORBvoc.txt Main/mono/calib_files/BOREALHDR_july_right.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_right/ ../results/$file_name/orbslam2/mono/auto_exposure/
+# # Automatic exposure time
+# ./Main/mono/mono_borealhdr Vocabulary/ORBvoc.txt Main/mono/calib_files/BOREALHDR_july_right.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_right/all/ ../results/$file_name/orbslam2/mono/auto_exposure/
+
+# All brackets
+./Main/mono/mono_borealhdr Vocabulary/ORBvoc.txt Main/mono/calib_files/BOREALHDR_july_left.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_left/all_brackets/ ../results/$file_name/orbslam2/mono/all_brackets/
