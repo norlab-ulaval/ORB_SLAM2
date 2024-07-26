@@ -338,21 +338,21 @@ void Tracking::Track()
 
                 // NOTE: Motion model was disabled because it caused a lot of instability
 
-                // if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
-                // {
-                //     cout << "Velocity is empty (" << mVelocity.empty() << ") or last reloc ID outdated (" << (mCurrentFrame.mnId<mnLastRelocFrameId+2) << ")." << endl; 
-                //     bOK = TrackReferenceKeyFrame();
-                // }
-                // else
-                // {
-                //     cout << "Velocity OK, tracking with motion model." << endl;
-                //     bOK = TrackWithMotionModel();
-                //     if(!bOK)
-                //     {   
-                //         cout << "Tracking with motion model failed, tracking with reference keyframe." << endl;
-                //         bOK = TrackReferenceKeyFrame();
-                //     }
-                // }
+                if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
+                {
+                    cout << "Velocity is empty (" << mVelocity.empty() << ") or last reloc ID outdated (" << (mCurrentFrame.mnId<mnLastRelocFrameId+2) << ")." << endl; 
+                    bOK = TrackReferenceKeyFrame();
+                }
+                else
+                {
+                    cout << "Velocity OK, tracking with motion model." << endl;
+                    bOK = TrackWithMotionModel();
+                    if(!bOK)
+                    {   
+                        cout << "Tracking with motion model failed, tracking with reference keyframe." << endl;
+                        bOK = TrackReferenceKeyFrame();
+                    }
+                }
             }
             else
             {
@@ -639,6 +639,7 @@ void Tracking::MonocularInitialization()
         // Set Reference Frame
         cout << "Initializing, number of keypoints detected: " << mCurrentFrame.mvKeys.size() << endl;
         if(mCurrentFrame.mvKeys.size()>100)
+        // if(mCurrentFrame.mvKeys.size()>10)
         {
             mInitialFrame = Frame(mCurrentFrame);
             mLastFrame = Frame(mCurrentFrame);

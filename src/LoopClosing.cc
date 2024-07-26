@@ -104,6 +104,7 @@ bool LoopClosing::DetectLoop()
 {
     // cout << "Searching for loop..." << endl;
     // cout << "Turning off Loop Closing for now" << endl;
+
     // NOTE: Turned off loop closing with following line
     return false;
     {
