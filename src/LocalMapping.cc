@@ -74,6 +74,7 @@ void LocalMapping::Run()
 
             mbAbortBA = false;
 
+            // NOTE: Removed Local Bundle Adjustment
             if(!CheckNewKeyFrames() && !stopRequested())
             {
                 // Local BA
@@ -81,7 +82,8 @@ void LocalMapping::Run()
                     Optimizer::LocalBundleAdjustment(mpCurrentKeyFrame,&mbAbortBA, mpMap);
 
                 // Check redundant local Keyframes
-                KeyFrameCulling();
+                // NOTE: Removed KeyFrameCulling
+                // KeyFrameCulling();
             }
 
             mpLoopCloser->InsertKeyFrame(mpCurrentKeyFrame);

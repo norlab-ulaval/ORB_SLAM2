@@ -674,6 +674,8 @@ void Tracking::MonocularInitialization()
         int nmatches = matcher.SearchForInitialization(mInitialFrame,mCurrentFrame,mvbPrevMatched,mvIniMatches,100);
 
         // Check if there are enough correspondences
+        cout << "Number of matches initialization phase: " << nmatches << endl;
+        // if(nmatches<30)
         if(nmatches<100)
         {
             delete mpInitializer;
@@ -840,7 +842,7 @@ bool Tracking::TrackReferenceKeyFrame()
 
     int nmatches = matcher.SearchByBoW(mpReferenceKF,mCurrentFrame,vpMapPointMatches);
 
-    cout << "Number of matches with reference keyframe: " << nmatches << endl;
+    cout << "Number of matches with reference keyframe (before outliers rejection): " << nmatches << endl;
 
     if(nmatches<15)
         return false;
@@ -868,10 +870,11 @@ bool Tracking::TrackReferenceKeyFrame()
             }
             else if(mCurrentFrame.mvpMapPoints[i]->Observations()>0)
                 nmatchesMap++;
+                mCurrentFrame.mvpMapPointsWithoutOutliers.push_back(mCurrentFrame.mvpMapPoints[i]);
         }
     }
 
-    cout << "Number of matches with map points: " << nmatchesMap << ", expecting at least 10." << endl;
+    cout << "Number of matches with map points (after outliers rejection): " << nmatchesMap << ", expecting at least 10." << endl;
     return nmatchesMap>=10;
 }
 
@@ -961,7 +964,7 @@ bool Tracking::TrackWithMotionModel()
     else
         th=7;
     int nmatches = matcher.SearchByProjection(mCurrentFrame,mLastFrame,th,mSensor==System::MONOCULAR);
-    cout << "Number of matches: " << nmatches << endl;
+    cout << "Number of matches with map (before outliers rejection): " << nmatches << endl;
 
     // If few matches, uses a wider window search
     if(nmatches<20)
@@ -1008,7 +1011,7 @@ bool Tracking::TrackWithMotionModel()
         return nmatches>20;
     }
 
-    cout << "Number of matches with map points: " << nmatchesMap << ", expecting at least 10." << endl;
+    cout << "Number of matches with map points (after outliers rejection): " << nmatchesMap << ", expecting at least 10." << endl;
     return nmatchesMap>=10;
 }
 
@@ -1047,7 +1050,7 @@ bool Tracking::TrackLocalMap()
         }
     }
 
-    cout << "Number of inliers: " << mnMatchesInliers << endl;
+    cout << "Number of inliers in the local map: " << mnMatchesInliers << endl;
 
     // Decide if the tracking was succesful
     // More restrictive if there was a relocalization recently

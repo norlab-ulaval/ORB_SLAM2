@@ -48,9 +48,10 @@ int main(int argc, char **argv)
     LoadImages(string(argv[3]), vstrImageFilenames, vTimestamps);
 
     std::string savePath = argv[4];
-    // Create save folder
-    std::string command = "mkdir -p " + savePath;
-    system(command.c_str());
+    std::string command_keypoints = "mkdir -p " + savePath + "/keypoints/";
+    system(command_keypoints.c_str());
+    std::string command_map = "mkdir -p " + savePath + "/map/";
+    system(command_map.c_str());
 
     int nImages = vstrImageFilenames.size();
 
@@ -102,7 +103,7 @@ int main(int argc, char **argv)
 
         // Pass the image to the SLAM system
         // SLAM.TrackMonocular(im,tframe);
-        SLAM.TrackMonocularCountMap(im,tframe, count_map);
+        SLAM.TrackMonocularCountMap(im,tframe, count_map, savePath);
         cout << "Map number: " << count_map << endl;
 
 #ifdef COMPILEDWITHC11

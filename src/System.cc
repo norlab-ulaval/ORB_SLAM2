@@ -321,7 +321,7 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
     return Tcw;
 }
 
-cv::Mat System::TrackMonocularCountMap(const cv::Mat &im, const double &timestamp, int &count_map)
+cv::Mat System::TrackMonocularCountMap(const cv::Mat &im, const double &timestamp, int &count_map, string& savePath)
 {
     if(mSensor!=MONOCULAR)
     {
@@ -366,6 +366,62 @@ cv::Mat System::TrackMonocularCountMap(const cv::Mat &im, const double &timestam
     }
 
     cv::Mat Tcw = mpTracker->GrabImageMonocular(im,timestamp);
+
+    // NOTE: Save matches with map positions to a CSV file
+    int N = mpTracker->mCurrentFrame.mvKeys.size();
+    vector<bool> mvbVO = vector<bool>(N,false);
+    vector<bool> mvbMap = vector<bool>(N,false);
+    for(int i=0;i<mpTracker->mCurrentFrame.N;i++)
+    {
+        MapPoint* pMP = mpTracker->mCurrentFrame.mvpMapPoints[i];
+        if(pMP)
+        {
+            if(!mpTracker->mCurrentFrame.mvbOutlier[i])
+            {
+                if(pMP->Observations()>0)
+                {
+                    mvbMap[i]=true;
+                }
+                else
+                {
+                    mvbVO[i]=true;
+                }
+            }
+        }
+    }
+
+    // NOTE: Save keypoints positions to a CSV file
+    std::ostringstream timestamp_fixed_precision;
+    timestamp_fixed_precision << std::fixed << std::setprecision(6) << timestamp;
+    std::ofstream csvFileKeypoints(savePath + "/keypoints/keypoints_" + timestamp_fixed_precision.str() + ".csv");
+    csvFileKeypoints << "timestamp,x,y,match_in_map" << std::endl;
+    for(int i=0;i<N;i++)
+    {
+        if (mvbMap[i])
+        {
+            cv::KeyPoint keypoint = mpTracker->mCurrentFrame.mvKeys[i];
+            csvFileKeypoints << timestamp_fixed_precision.str() << "," << keypoint.pt.x << "," << keypoint.pt.y << "," << "true" << std::endl;
+        }
+        else
+        {
+            cv::KeyPoint keypoint = mpTracker->mCurrentFrame.mvKeys[i];
+            csvFileKeypoints << timestamp_fixed_precision.str() << "," << keypoint.pt.x << "," << keypoint.pt.y << "," << "false" << std::endl;
+        }
+    }
+    csvFileKeypoints.close();
+
+    // Save all map points in csv
+    std::ofstream csvFileMap(savePath + "/map/map_points.csv");
+    csvFileMap << "x,y,z" << std::endl;
+
+    vector<MapPoint*> mapPoints = mpMap->GetAllMapPoints();
+    for(int i=0;i<mapPoints.size();i++)
+    {
+        cv::Mat pos = mapPoints[i]->GetWorldPos();
+        csvFileMap << pos.at<float>(0) << "," << pos.at<float>(1) << "," << pos.at<float>(2) << std::endl;
+    }
+    csvFileMap.close();
+
 
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;

@@ -116,7 +116,7 @@ int main(int argc, char **argv)
     const int nImages = vstrImageLeft.size();
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1], argv[2], ORB_SLAM2::System::STEREO, false);
+    ORB_SLAM2::System SLAM(argv[1], argv[2], ORB_SLAM2::System::STEREO, true);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -229,11 +229,18 @@ void LoadImages(const string &strPathLeft, const string &strPathRight, vector<st
     dp = opendir(strPathLeft.c_str());
     if (dp != nullptr)
     {
+        std::vector<std::string> filenames;
         while ((entry = readdir(dp)))
         {
             if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
                 continue;
-            std::string filename = entry->d_name;
+            filenames.push_back(entry->d_name);
+        }
+        std::sort(filenames.begin(), filenames.end());
+
+        for (const auto& filename : filenames)
+        {
+            // std::string filename = entry->d_name;
             std::string timestampStr = filename.substr(0, filename.find_last_of('.'));
             vstrImageLeft.push_back(strPathLeft + "/" + filename);
             vTimeStamps.push_back(std::stod(timestampStr) / 1e9);

@@ -5,7 +5,11 @@ exposure_time=32.0
 experiment=forest_04-21-2023
 file_name=backpack_2023-04-21-08-51-27
 
-./Main/stereo/stereo_borealhdr Vocabulary/ORBvoc.txt Main/stereo/calib_files/BOREALHDR_april.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_left/$exposure_time/ ../../data/$experiment/data_high_resolution/$file_name/camera_right/$exposure_time/ ../results/$file_name/orbslam2/stereo/$exposure_time/
+# # One exposure time
+# ./Main/stereo/stereo_borealhdr Vocabulary/ORBvoc.txt Main/stereo/calib_files/BOREALHDR_april.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_left/$exposure_time/ ../../data/$experiment/data_high_resolution/$file_name/camera_right/$exposure_time/ ../results/$file_name/orbslam2/stereo/$exposure_time/
+
+# All brackets
+./Main/stereo/stereo_borealhdr Vocabulary/ORBvoc.txt Main/stereo/calib_files/BOREALHDR_april.yaml ../../data/$experiment/data_high_resolution/$file_name/camera_left/all_brackets/ ../../data/$experiment/data_high_resolution/$file_name/camera_right/all_brackets/ ../results/$file_name/orbslam2/stereo/all_brackets/
 
 ### SEPTEMBER ###
 exposure_time=16.0
