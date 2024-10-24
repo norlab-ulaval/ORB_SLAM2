@@ -304,16 +304,20 @@ void Tracking::Track()
                 // Local Mapping might have changed some MapPoints tracked in last frame
                 CheckReplacedInLastFrame();
 
-                if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
-                {
-                    bOK = TrackReferenceKeyFrame();
-                }
-                else
-                {
-                    bOK = TrackWithMotionModel();
-                    if(!bOK)
-                        bOK = TrackReferenceKeyFrame();
-                }
+                // OG: If remove motion-model
+                bOK = TrackReferenceKeyFrame();
+
+                // OG: Remove motion-model to make it more stable for small FPS
+                // if(mVelocity.empty() || mCurrentFrame.mnId<mnLastRelocFrameId+2)
+                // {
+                //     bOK = TrackReferenceKeyFrame();
+                // }
+                // else
+                // {
+                //     bOK = TrackWithMotionModel();
+                //     if(!bOK)
+                //         bOK = TrackReferenceKeyFrame();
+                // }
             }
             else
             {
@@ -454,6 +458,7 @@ void Tracking::Track()
             mlpTemporalPoints.clear();
 
             // Check if we need to insert a new keyframe
+            // OG: Always insert new keyframe unless loop closure is detected
             if(NeedNewKeyFrame())
                 CreateNewKeyFrame();
 
@@ -477,6 +482,10 @@ void Tracking::Track()
                 mpSystem->Reset();
                 return;
             }
+            // // OG: Reset if the camera get lost
+            // cout << "Lost, resetting..." << endl;
+            // mpSystem->Reset();
+            return;
         }
 
         if(!mCurrentFrame.mpReferenceKF)
@@ -981,7 +990,16 @@ bool Tracking::NeedNewKeyFrame()
 
     // If Local Mapping is freezed by a Loop Closure do not insert keyframes
     if(mpLocalMapper->isStopped() || mpLocalMapper->stopRequested())
+    {
+        cout << "Do not add keyframe" << endl;
         return false;
+    }
+    else
+    {
+        // OG: Always insert new keyframe but that into account the loop closure thread
+        cout << "Add keyframe" << endl;
+        return true;
+    }
 
     const int nKFs = mpMap->KeyFramesInMap();
 
