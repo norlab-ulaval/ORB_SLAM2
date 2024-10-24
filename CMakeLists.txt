@@ -86,6 +86,12 @@ add_executable(mono_borealhdr
 Main/mono/mono_borealhdr.cc)
 target_link_libraries(mono_borealhdr ${PROJECT_NAME})
 
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Main/stereo)
+
+add_executable(stereo_borealhdr
+Main/stereo/stereo_borealhdr.cc)
+target_link_libraries(stereo_borealhdr ${PROJECT_NAME})
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/Examples/RGB-D)
 
 add_executable(rgbd_tum
