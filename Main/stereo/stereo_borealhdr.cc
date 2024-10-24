@@ -176,7 +176,6 @@ int main(int argc, char **argv)
 
         // Pass the images to the SLAM system
         SLAM.TrackStereoCountMap(imLeftRect, imRightRect, tframe, count_map, savePath);
-        cout << "Map number: " << count_map << endl;
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();

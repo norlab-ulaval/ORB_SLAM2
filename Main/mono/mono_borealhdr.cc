@@ -104,7 +104,6 @@ int main(int argc, char **argv)
         // Pass the image to the SLAM system
         // SLAM.TrackMonocular(im,tframe);
         SLAM.TrackMonocularCountMap(im,tframe, count_map, savePath);
-        cout << "Map number: " << count_map << endl;
 
 #ifdef COMPILEDWITHC11
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();

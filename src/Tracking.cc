@@ -991,13 +991,12 @@ bool Tracking::NeedNewKeyFrame()
     // If Local Mapping is freezed by a Loop Closure do not insert keyframes
     if(mpLocalMapper->isStopped() || mpLocalMapper->stopRequested())
     {
-        cout << "Do not add keyframe" << endl;
+        cout << "Do not add keyframe. Performing Loop closure." << endl;
         return false;
     }
     else
     {
         // OG: Always insert new keyframe but that into account the loop closure thread
-        cout << "Add keyframe" << endl;
         return true;
     }
 
