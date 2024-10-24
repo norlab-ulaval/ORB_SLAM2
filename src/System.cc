@@ -164,6 +164,59 @@ cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const
     return Tcw;
 }
 
+cv::Mat System::TrackStereoCountMap(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp, int &count_map)
+{
+    if(mSensor!=STEREO)
+    {
+        cerr << "ERROR: you called TrackStereo but input sensor was not set to STEREO." << endl;
+        exit(-1);
+    }   
+
+    // Check mode change
+    {
+        unique_lock<mutex> lock(mMutexMode);
+        if(mbActivateLocalizationMode)
+        {
+            mpLocalMapper->RequestStop();
+
+            // Wait until Local Mapping has effectively stopped
+            while(!mpLocalMapper->isStopped())
+            {
+                usleep(1000);
+            }
+
+            mpTracker->InformOnlyTracking(true);
+            mbActivateLocalizationMode = false;
+        }
+        if(mbDeactivateLocalizationMode)
+        {
+            mpTracker->InformOnlyTracking(false);
+            mpLocalMapper->Release();
+            mbDeactivateLocalizationMode = false;
+        }
+    }
+
+    // Check reset
+    {
+    unique_lock<mutex> lock(mMutexReset);
+    if(mbReset)
+    {
+        cout << "resetting" << endl;
+        mpTracker->Reset();
+        mbReset = false;
+        count_map ++;
+    }
+    }
+
+    cv::Mat Tcw = mpTracker->GrabImageStereo(imLeft,imRight,timestamp);
+
+    unique_lock<mutex> lock2(mMutexState);
+    mTrackingState = mpTracker->mState;
+    mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
+    mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
+    return Tcw;
+}
+
 cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const double &timestamp)
 {
     if(mSensor!=RGBD)
@@ -258,6 +311,123 @@ cv::Mat System::TrackMonocular(const cv::Mat &im, const double &timestamp)
     }
 
     cv::Mat Tcw = mpTracker->GrabImageMonocular(im,timestamp);
+
+    unique_lock<mutex> lock2(mMutexState);
+    mTrackingState = mpTracker->mState;
+    mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
+    mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
+
+    return Tcw;
+}
+
+string descriptorToHex(const cv::Mat& descriptor) {
+    stringstream ss;
+
+    // Iterate through each byte in the descriptor (first row as example)
+    for (int i = 0; i < descriptor.cols; ++i) {
+        // Convert each byte to hexadecimal and append it to the stringstream
+        ss << hex << setw(2) << setfill('0') << (int)descriptor.at<uchar>(i);
+    }
+
+    return ss.str();
+}
+
+cv::Mat System::TrackMonocularCountMap(const cv::Mat &im, const double &timestamp, int &count_map, string& savePath)
+{
+    if(mSensor!=MONOCULAR)
+    {
+        cerr << "ERROR: you called TrackMonocular but input sensor was not set to Monocular." << endl;
+        exit(-1);
+    }
+
+    // Check mode change
+    {
+        unique_lock<mutex> lock(mMutexMode);
+        if(mbActivateLocalizationMode)
+        {
+            mpLocalMapper->RequestStop();
+
+            // Wait until Local Mapping has effectively stopped
+            while(!mpLocalMapper->isStopped())
+            {
+                usleep(1000);
+            }
+
+            mpTracker->InformOnlyTracking(true);
+            mbActivateLocalizationMode = false;
+        }
+        if(mbDeactivateLocalizationMode)
+        {
+            mpTracker->InformOnlyTracking(false);
+            mpLocalMapper->Release();
+            mbDeactivateLocalizationMode = false;
+        }
+    }
+
+    // Check reset
+    {
+    unique_lock<mutex> lock(mMutexReset);
+    if(mbReset)
+    {
+        cout << "resetting" << endl;
+        mpTracker->Reset();
+        mbReset = false;
+        count_map ++;
+    }
+    }
+
+    cv::Mat Tcw = mpTracker->GrabImageMonocular(im,timestamp);
+
+    // NOTE: Save matches with map positions to a CSV file
+    int N = mpTracker->mCurrentFrame.mvKeys.size();
+    vector<bool> mvbVO = vector<bool>(N,false);
+    vector<bool> mvbMap = vector<bool>(N,false);
+    for(int i=0;i<mpTracker->mCurrentFrame.N;i++)
+    {
+        MapPoint* pMP = mpTracker->mCurrentFrame.mvpMapPoints[i];
+        if(pMP)
+        {
+            if(!mpTracker->mCurrentFrame.mvbOutlier[i])
+            {
+                if(pMP->Observations()>0)
+                {
+                    mvbMap[i]=true;
+                }
+                else
+                {
+                    mvbVO[i]=true;
+                }
+            }
+        }
+    }
+
+    // NOTE: Save keypoints positions to a CSV file
+    std::ostringstream timestamp_fixed_precision;
+    timestamp_fixed_precision << std::fixed << std::setprecision(0) << timestamp * 1e9;
+    std::ofstream csvFileKeypoints(savePath + "/keypoints/keypoints_" + timestamp_fixed_precision.str() + ".csv");
+    csvFileKeypoints << "timestamp,x,y,match_in_map,descriptor" << std::endl;
+    cv::Mat descriptors = mpTracker->mCurrentFrame.mDescriptors;
+    
+    for(int i=0;i<N;i++)
+    {
+        cv::KeyPoint keypoint = mpTracker->mCurrentFrame.mvKeys[i];
+        cv::Mat descriptor =  mpTracker->mCurrentFrame.mDescriptors.row(i);
+        csvFileKeypoints << timestamp_fixed_precision.str() << "," << keypoint.pt.x << "," << keypoint.pt.y << "," << mvbMap[i] << "," << descriptorToHex(descriptor) << std::endl;
+    }
+    csvFileKeypoints.close();
+
+    // Save all map points in csv
+    std::ofstream csvFileMap(savePath + "/map/map_points.csv");
+    csvFileMap << "x,y,z" << std::endl;
+
+    vector<MapPoint*> mapPoints = mpMap->GetAllMapPoints();
+    for(int i=0;i<mapPoints.size();i++)
+    {
+        cv::Mat pos = mapPoints[i]->GetWorldPos();
+        csvFileMap << pos.at<float>(0) << "," << pos.at<float>(1) << "," << pos.at<float>(2) << std::endl;
+    }
+    csvFileMap.close();
+
 
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;
