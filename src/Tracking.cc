@@ -476,15 +476,15 @@ void Tracking::Track()
         // Reset if the camera get lost soon after initialization
         if(mState==LOST)
         {
-            if(mpMap->KeyFramesInMap()<=5)
-            {
-                cout << "Track lost soon after initialisation, reseting..." << endl;
-                mpSystem->Reset();
-                return;
-            }
-            // // OG: Reset if the camera get lost
-            // cout << "Lost, resetting..." << endl;
-            // mpSystem->Reset();
+            // if(mpMap->KeyFramesInMap()<=5)
+            // {
+            //     cout << "Track lost soon after initialisation, reseting..." << endl;
+            //     mpSystem->Reset();
+            //     return;
+            // }
+            // OG: Reset if the camera get lost
+            cout << "Lost, resetting..." << endl;
+            mpSystem->Reset();
             return;
         }
 
