@@ -260,18 +260,6 @@ cv::Mat System::TrackStereoCountMap(const cv::Mat &imLeft, const cv::Mat &imRigh
     }
     csvFileKeypoints.close();
 
-    // Save all map points in csv
-    std::ofstream csvFileMap(savePath + "/map/map_points.csv");
-    csvFileMap << "x,y,z" << std::endl;
-
-    vector<MapPoint*> mapPoints = mpMap->GetAllMapPoints();
-    for(int i=0;i<mapPoints.size();i++)
-    {
-        cv::Mat pos = mapPoints[i]->GetWorldPos();
-        csvFileMap << pos.at<float>(0) << "," << pos.at<float>(1) << "," << pos.at<float>(2) << std::endl;
-    }
-    csvFileMap.close();
-
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;
     mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
@@ -467,19 +455,6 @@ cv::Mat System::TrackMonocularCountMap(const cv::Mat &im, const double &timestam
     }
     csvFileKeypoints.close();
 
-    // Save all map points in csv
-    std::ofstream csvFileMap(savePath + "/map/map_points.csv");
-    csvFileMap << "x,y,z" << std::endl;
-
-    vector<MapPoint*> mapPoints = mpMap->GetAllMapPoints();
-    for(int i=0;i<mapPoints.size();i++)
-    {
-        cv::Mat pos = mapPoints[i]->GetWorldPos();
-        csvFileMap << pos.at<float>(0) << "," << pos.at<float>(1) << "," << pos.at<float>(2) << std::endl;
-    }
-    csvFileMap.close();
-
-
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;
     mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
@@ -538,6 +513,21 @@ void System::Shutdown()
 
     if(mpViewer)
         pangolin::BindToContext("ORB-SLAM2: Map Viewer");
+}
+
+void System::SaveMap(const string &filename)
+{
+    // Save all map points in csv
+    std::ofstream csvFileMap(filename.c_str());
+    csvFileMap << "x,y,z" << std::endl;
+
+    vector<MapPoint*> mapPoints = mpMap->GetAllMapPoints();
+    for(int i=0;i<mapPoints.size();i++)
+    {
+        cv::Mat pos = mapPoints[i]->GetWorldPos();
+        csvFileMap << pos.at<float>(0) << "," << pos.at<float>(1) << "," << pos.at<float>(2) << std::endl;
+    }
+    csvFileMap.close();
 }
 
 void System::SaveTrajectoryTUM(const string &filename)

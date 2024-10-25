@@ -118,7 +118,7 @@ int main(int argc, char **argv)
     const int nImages = vstrImageLeft.size();
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1], argv[2], ORB_SLAM2::System::STEREO, false);
+    ORB_SLAM2::System SLAM(argv[1], argv[2], ORB_SLAM2::System::STEREO, true);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -195,7 +195,7 @@ int main(int argc, char **argv)
             T = tframe - vTimeStamp[ni - 1];
 
         SLAM.SaveTrajectoryTUM(savePath + "/CameraTrajectory" + std::to_string(count_map) + ".txt");
-
+        SLAM.SaveMap(savePath + "/map/map_" + std::to_string(count_map) + ".csv");
         // if (ttrack < T)
         //     usleep((T - ttrack) * 1e6);
     }

@@ -126,6 +126,7 @@ int main(int argc, char **argv)
         //     usleep((T-ttrack)*1e6);
 
         SLAM.SaveKeyFrameTrajectoryTUM(savePath + "/CameraTrajectory" + std::to_string(count_map) + ".txt");
+        SLAM.SaveMap(savePath + "/map/map_" + std::to_string(count_map) + ".csv");
     }
 
     // Stop all threads
