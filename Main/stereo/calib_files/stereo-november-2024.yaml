@@ -1,0 +1,116 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+
+# Camera calibration and distortion parameters (OpenCV) 
+Camera.fx: 1186.3604467350422
+Camera.fy: 1186.0069819358844
+Camera.cx: 961.6762371609761
+Camera.cy: 583.031037539774
+
+Camera.k1: 0.0
+Camera.k2: 0.0
+Camera.p1: 0.0
+Camera.p2: 0.0
+
+Camera.width: 1920
+Camera.height: 1200
+
+# Camera frames per second 
+# Camera.fps: 3.666667
+Camera.fps: 22.0
+
+# stereo baseline times fx
+Camera.bf: 207.17403997349834
+
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1
+
+# Close/Far threshold. Baseline times.
+ThDepth: 35
+
+#--------------------------------------------------------------------------------------------
+# Stereo Rectification. Only if you need to pre-rectify the images.
+# Camera.fx, .fy, etc must be the same as in LEFT.P
+#--------------------------------------------------------------------------------------------
+LEFT.height: 1200
+LEFT.width: 1920
+LEFT.D: !!opencv-matrix
+   rows: 1
+   cols: 5
+   dt: d
+   data: [-0.24443677468748984, 0.1292852047333839, -2.934282617092677e-05, -0.000245591552238503,-0.04273967609712501]
+LEFT.K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [1186.3604467350422, 0.0, 961.6762371609761, 0.0, 1186.0069819358844, 583.031037539774,0.0, 0.0, 1.0]
+LEFT.R: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [0.999996804072236, 0.0017689085085179376, 0.0018063244455242564, -0.0017559907081719523,0.999973052650178, -0.00712814633106663, -0.0018188848085625084, 0.007124951661083582,0.9999729629954405]
+LEFT.P: !!opencv-matrix
+   rows: 3
+   cols: 4
+   dt: d
+   data: [1151.0505455124382, 0.0, 951.5345001220703, 0.0, 0.0, 1151.0505455124382, 570.602668762207,0.0, 0.0, 0.0, 1.0, 0.0]
+
+RIGHT.height: 1200
+RIGHT.width: 1920
+RIGHT.D: !!opencv-matrix
+   rows: 1
+   cols: 5
+   dt: d
+   data: [-0.24380346349125756, 0.12449476121015988, 0.00011487226617104872, 0.0002480092743119037,-0.038502422347003296]
+RIGHT.K: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [1189.18372342419, 0.0, 949.1681035324755, 0.0, 1189.028329878619, 578.7894208536882,0.0, 0.0, 1.0]
+RIGHT.R: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [0.9999983560259595, 0.000455821714915489, -0.001755041863456478, -0.00044330273270833055,0.9999745047322284, 0.007126946626817324, 0.0017582457352277733, -0.007126156895447993,0.9999730628671135]
+RIGHT.P: !!opencv-matrix
+   rows: 3
+   cols: 4
+   dt: d
+   data: [1151.0505455124382, 0.0, 951.5345001220703, -207.17403997349834, 0.0, 1151.0505455124382,570.602668762207, 0.0, 0.0, 0.0, 1.0, 0.0]
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 3000
+
+# ORB Extractor: Scale factor between levels in the scale pyramid 	
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid	
+ORBextractor.nLevels: 13
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+# You can lower these values if your images have low contrast			
+ORBextractor.iniThFAST: 15
+ORBextractor.minThFAST: 5
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.05
+Viewer.KeyFrameLineWidth: 1
+Viewer.GraphLineWidth: 0.9
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.08
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0
+Viewer.ViewpointY: -0.7
+Viewer.ViewpointZ: -1.8
+Viewer.ViewpointF: 500
