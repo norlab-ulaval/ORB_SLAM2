@@ -61,6 +61,11 @@ int main(int argc, char **argv)
     LoadImages(string(argv[3]), string(argv[4]), vstrImageLeft, vstrImageRight, vTimeStamp);
     std::string savePath = argv[5];
     // Create save folder
+    if (opendir(savePath.c_str()) != nullptr)
+    {
+        std::string command_remove = "rm -rf " + savePath;
+        system(command_remove.c_str());
+    }
     std::string command_keypoints = "mkdir -p " + savePath + "/keypoints/";
     system(command_keypoints.c_str());
     std::string command_map = "mkdir -p " + savePath + "/map/";
